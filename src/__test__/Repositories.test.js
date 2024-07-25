@@ -17,13 +17,14 @@ function renderListComponent() {
         description: "A test repository",
         language: "JavaScript",
         html_url: "https://github.com/test/repo",
-        owner: 'facebook'
+        owner: { login: 'facebook' }
     }
     render(
         <MemoryRouter>
             <RepositoriesListItem repository={mockRepository} />
         </MemoryRouter>
     );
+    return { mockRepository }
 }
 describe("Repositories Testing", () => {
     it("displays information about the repository", () => {
@@ -40,10 +41,32 @@ describe("Repositories Testing", () => {
     })
 
     it("shows a link to the repository", async () => {
-        renderListComponent();
+        const { mockRepository } = renderListComponent();
+
         //use find.. to solve asynchronous functionality
-        await screen.findByRole('img', {
-            nme: /JavaScript/i
+        const img = await screen.findByRole('img', {
+            name: /JavaScript/i
         })
+        expect(img).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /github repository/i })).toHaveAttribute('href', mockRepository.html_url);
     })
+
+    it("shows the appropriate language icon", async () => {
+        renderListComponent()
+        const icon = await screen.findByRole('img', {
+            name: /JavaScript/i
+        })
+
+        expect(icon).toHaveClass('js-icon')
+    })
+
+    it("shows the link to the code editor page", async () => {
+        const { mockRepository } = renderListComponent()
+        const link = await screen.findByRole('link', {
+            name: new RegExp(mockRepository.owner.login)
+        })
+
+        expect(link).toHaveAttribute('href', `/repositories/${mockRepository.full_name}`)
+    })
+
 })
