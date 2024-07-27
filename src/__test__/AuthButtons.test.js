@@ -2,6 +2,7 @@ import { screen, render } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import AuthButtons from "../components/auth/AuthButtons";
 import { createServer } from "./server";
+import { SWRConfig } from "swr";
 
 describe("testing AuthButtons when user is not signed in", () => {
     createServer([
@@ -34,11 +35,12 @@ describe("testing AuthButtons when user is signed in", () => {
     createServer([
         {
             path: "/api/user",
-            res: (req, res, ctx) => {
+            res: () => {
                 return {
-                    items: [
-                        { id: 1, email: 'foo@bar.com' },
-                    ]
+                    user: {
+                        id: 1,
+                        username: 'testuser'
+                    }
                 }
             }
         },
@@ -46,16 +48,24 @@ describe("testing AuthButtons when user is signed in", () => {
 
     it("does not display both signIn and signOut buttons", async () => {
         render(
-            <MemoryRouter >
-                <AuthButtons />
-            </MemoryRouter>
+            <SWRConfig value={{ provider: () => new Map() }}>
+                <MemoryRouter >
+                    <AuthButtons />
+                </MemoryRouter>
+            </SWRConfig>
         );
+        // await pause()
+        // screen.debug()
+        const signOutButton = await screen.findByRole('link', { name: /sign out/i });
+
         const signInButton = screen.queryByRole('link', { name: /sign in/i });
         const signUpButton = screen.queryByRole('link', { name: /sign up/i });
-        // const signOutButton = screen.queryByRole('link', { name: /sign out/i });
         expect(signInButton).not.toBeInTheDocument();
         expect(signUpButton).not.toBeInTheDocument();
-        // expect(signOutButton).not.toBeInTheDocument()
+        expect(signOutButton).toBeInTheDocument()
     })
 })
 
+// const pause = () => {
+//     return new Promise((resolve) => setTimeout(resolve, 100));
+// }
