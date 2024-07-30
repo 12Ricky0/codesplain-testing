@@ -8,7 +8,7 @@ describe("testing AuthButtons when user is not signed in", () => {
     createServer([
         {
             path: "/api/user",
-            res: (req, res, ctx) => {
+            res: () => {
                 return {
                     user: null
                 }

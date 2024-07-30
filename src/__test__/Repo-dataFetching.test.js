@@ -6,7 +6,7 @@ import { createServer } from "./server";
 createServer([
     {
         path: "/api/repositories",
-        res: (req, res, ctx) => {
+        res: (req) => {
             const language = (req.url.searchParams.get('q')).split(':')[2]
 
             return {
